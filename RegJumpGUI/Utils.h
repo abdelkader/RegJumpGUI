@@ -3,6 +3,7 @@
 #include <tchar.h>
 #include "resource.h"
 
+bool IsUserAdmin();
 BOOL CenterWindow(HWND hwndWindow);
 void RegeditJump( HWND hWnd, char * RegPath, char * RegValue);
 char* GetClipboardText();

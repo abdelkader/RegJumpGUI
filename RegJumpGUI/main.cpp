@@ -23,7 +23,6 @@ INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	  CenterWindow(hDlg);
 	  SetIcon(hDlg);
 	  DisplayText(hDlg);
-	  ChangeStatusButton(hDlg);
 	  break;
 
   case WM_COMMAND:
@@ -47,11 +46,16 @@ INT_PTR CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
   return FALSE;
 }
-
 int WINAPI _tWinMain(HINSTANCE hInst, HINSTANCE h0, LPTSTR lpCmdLine, int nCmdShow)
 {
   MSG msg;
   BOOL ret;
+
+  if (!IsUserAdmin())
+  {
+	  MessageBox(0, L"Must be started in admin mode!", L"Error", MB_OK);
+	  return -1;
+  }
 
   InitCommonControls();
   HWND hDlg = CreateDialogParam(hInst, MAKEINTRESOURCE(IDD_DIALOG1), 0, DialogProc, 0);
