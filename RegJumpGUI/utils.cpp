@@ -1,9 +1,93 @@
 #include <Windows.h>
 #include <CommCtrl.h>
 #include <tchar.h>
+#include <strsafe.h>
 #include "resource.h"
 
 #pragma region Mehtodes
+
+#pragma warning(disable:4996)
+
+//http://stackoverflow.com/questions/779875/what-is-the-function-to-replace-string-in-c
+char *str_replace(char *orig, char *rep, char *with) {
+	char *result; // the return string
+	char *ins;    // the next insert point
+	char *tmp;    // varies
+	int len_rep;  // length of rep (the string to remove)
+	int len_with; // length of with (the string to replace rep with)
+	int len_front; // distance between rep and end of last rep
+	int count;    // number of replacements
+
+	// sanity checks and initialization
+	if (!orig || !rep)
+		return NULL;
+	len_rep = strlen(rep);
+	if (len_rep == 0)
+		return NULL; // empty rep causes infinite loop during count
+	if (!with)
+		with = "";
+	len_with = strlen(with);
+
+	// count the number of replacements needed
+	ins = orig;
+	for (count = 0; tmp = strstr(ins, rep); ++count) {
+		ins = tmp + len_rep;
+	}
+
+	tmp = result = (char*)malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+
+	if (!result)
+		return NULL;
+
+	// first time through the loop, all the variable are set correctly
+	// from here on,
+	//    tmp points to the end of the result string
+	//    ins points to the next occurrence of rep in orig
+	//    orig points to the remainder of orig after "end of rep"
+	while (count--) {
+		ins = strstr(orig, rep);
+		len_front = ins - orig;
+		tmp = strncpy(tmp, orig, len_front) + len_front;
+		tmp = strcpy(tmp, with) + len_with;
+		orig += len_front + len_rep; // move to next "end of rep"
+	}
+	strcpy(tmp, orig);
+	return result;
+}
+
+char* HarmonizeString(char * RegPath)
+{
+	char * stringCopy = (char*)calloc(1, strlen(RegPath) + 1);
+
+	char *token = NULL;        // containt the first part of the key
+	char *next_token = NULL;   // the last part
+	char *root = NULL;         // the new root key. 
+
+
+	StringCchCopyA(stringCopy, strlen(RegPath), RegPath); // Keep a copy.
+	token = strtok_s(stringCopy, "\\", &next_token);
+
+	if (NULL == token)
+		return NULL;
+
+	if (strcmp(token, "HKCR") == 0)
+		root = "HKEY_CLASSES_ROOT";
+	else if (strcmp(token, "HKCU") == 0)
+		root = "HKEY_CURRENT_USER";
+	else if (strcmp(token, "HKLM") == 0)
+		root = "HKEY_LOCAL_MACHINE";
+	else if (strcmp(token, "HKU") == 0)
+		root = "HKEY_USERS";
+	else if (strcmp(token, "HKCC") == 0)
+		root = "HKEY_CURRENT_CONFIG";
+	else
+		root = token;
+
+	delete stringCopy;
+
+	return str_replace(RegPath, token, root);
+}
+
 
 /*
 https://msdn.microsoft.com/en-us/library/aa376389(v=vs.85).aspx
@@ -78,6 +162,7 @@ BOOL CenterWindow(HWND hwndWindow)
 //https://forum.sysinternals.com/regjump-sysinternals-way_topic5864.html
 void RegeditJump(HWND hWnd, char * RegPath, char * RegValue)
 {
+	char *hRegPath = HarmonizeString(RegPath);
 
 	// Open RegEdit
 	HWND regeditMainHwnd = FindWindow(L"RegEdit_RegEdit", NULL);
@@ -121,7 +206,7 @@ void RegeditJump(HWND hWnd, char * RegPath, char * RegValue)
 	WaitForInputIdle(hProcess, INFINITE);
 
 	// Open path
-	for (CHAR * ch = RegPath; *ch; ++ch)  {
+	for (CHAR * ch = hRegPath; *ch; ++ch)  {
 		if (*ch == '\\')  {
 
 			UINT vk = VK_RIGHT;
