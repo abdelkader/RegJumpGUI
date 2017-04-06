@@ -5,8 +5,8 @@ A tool that let you jump in regedit. It's the same as [the systernals one](https
 
 
 Supports for the short version of the Registry root key :
-      HKLM = HKEY_LOCAL_MACHINE
-      HKCU = HKEY_CURRENT_USER
-      HKCR = HKEY_CLASSES_ROOT
-      HKU   = HKEY_USERS
-      HCC   = HKEY_CURRENT_CONFIG
+* HKLM = HKEY_LOCAL_MACHINE
+* HKCU = HKEY_CURRENT_USER
+* HKCR = HKEY_CLASSES_ROOT
+* HKU   = HKEY_USERS
+* HCC   = HKEY_CURRENT_CONFIG
